@@ -486,7 +486,7 @@ esp_err_t bsp_sdcard_sdspi_mount(bsp_sdcard_cfg_t *cfg);
 
 
 #if (BSP_CONFIG_NO_GRAPHIC_LIB == 0)
-#define BSP_LCD_DRAW_BUFF_SIZE     (BSP_LCD_H_RES * 50)
+#define BSP_LCD_DRAW_BUFF_SIZE     (BSP_LCD_H_RES * 40)
 #define BSP_LCD_DRAW_BUFF_DOUBLE   (1)
 
 /**
