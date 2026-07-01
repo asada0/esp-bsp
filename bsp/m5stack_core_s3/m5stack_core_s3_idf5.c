@@ -42,15 +42,21 @@ static const audio_codec_data_if_t *i2s_data_if = NULL;  /* Codec data interface
 esp_err_t bsp_audio_init(const i2s_std_config_t *i2s_config)
 {
     esp_err_t ret = ESP_FAIL;
-    if (i2s_tx_chan && i2s_rx_chan) {
-        /* Audio was initialized before */
+    if (i2s_tx_chan) {
+        /* Audio was initialized before (TX-only — no mic on this HW, see below) */
         return ESP_OK;
     }
 
     /* Setup I2S peripheral */
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(CONFIG_BSP_I2S_NUM, I2S_ROLE_MASTER);
     chan_cfg.auto_clear = true; // Auto clear the legacy data in the DMA buffer
-    BSP_ERROR_CHECK_RETURN_ERR(i2s_new_channel(&chan_cfg, &i2s_tx_chan, &i2s_rx_chan));
+    /* TX-only (2026-07-01): the microphone is removed on this hardware — the app
+     * only plays audio (bsp_audio_codec_speaker_init), never records, and
+     * bsp_audio_codec_microphone_init() is dead code. Allocating the RX channel
+     * just wasted internal DMA buffers. Pass NULL for the RX handle so no RX
+     * channel / RX DMA is created; i2s_rx_chan stays NULL and the RX init/enable
+     * and the codec rx_handle below are all skipped by their != NULL guards. */
+    BSP_ERROR_CHECK_RETURN_ERR(i2s_new_channel(&chan_cfg, &i2s_tx_chan, NULL));
 
     /* Setup I2S channels */
     const i2s_std_config_t std_cfg_default = BSP_I2S_DUPLEX_MONO_CFG(22050);
